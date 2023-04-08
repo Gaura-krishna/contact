@@ -1,0 +1,41 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+body{
+    /* background-color:#A6B1E1; */
+    background-color: #efe0f7 !important;
+}
+.text-purple{
+    color:rgb(185, 197, 197);
+}
+.header{
+    height: 5rem;
+    align-items: center;
+}
+
+
+.add-icon{
+    background-color: #ffffff;
+    color:rgb(208, 131, 211);
+}
+.addcontact{
+    width:50rem;
+    background-color: #ffffff;
+}
+.table{
+    font-weight: bold;
+    font-size: medium;
+    font-family:  Helvetica, sans-serif;
+
+}
+.table>thead{
+    color: #ffffff;
+    background-color:rgb(176, 91, 179);
+}
+.table>tbody{
+    background-color:#f3f2fa ;
+    color: #112D4E;
+    
+
+}
