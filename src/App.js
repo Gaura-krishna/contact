@@ -1,5 +1,5 @@
 
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter,HashRouter, Route, Routes } from 'react-router-dom';
 import './App.css';
 import Addcontact from './Component/Addcontact';
 import { EditContact } from './Component/EditContact';
@@ -11,7 +11,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 function App() {
   return (
     <div className="App">
-      <BrowserRouter>
+      <HashRouter>
       <ToastContainer/>
       <Routes>
         <Route path='/' element={<Home/>}/>
@@ -19,7 +19,7 @@ function App() {
         <Route path='/edit/:id' element={<EditContact/>}/>
 
       </Routes>
-      </BrowserRouter>
+      </HashRouter >
      
     </div>
   );
