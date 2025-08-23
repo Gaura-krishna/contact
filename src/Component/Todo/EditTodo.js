@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { editTodo } from "../../Action/todoAction";
+
 
 const EditTodo = () => {
-  const { id } = useParams(); // Get task id from URL
+  const { id } = useParams(); // Get todo id from URL
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const tasks = useSelector((state) => state.todo);
-  const task = tasks.find((task_item) => task_item.id === parseInt(id || "", 10));
+  const task = tasks.find((task_item) => task_item._id === id); // ✅ use _id
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -19,23 +21,21 @@ const EditTodo = () => {
     if (task) {
       setTitle(task.title);
       setDescription(task.description);
-      setDueDate(task.dueDate);
+      setDueDate(task.dueDate?.split("T")[0] || ""); // ✅ avoid full ISO string
       setStatus(task.currentStatus);
     }
   }, [task]);
 
   const handleUpdate = (e) => {
     e.preventDefault();
-    dispatch({
-      type: "UPDATE_TASK",
-      payload: {
-        id: task.id,
+    dispatch(
+      editTodo(id, {
         title,
         description,
         dueDate,
         currentStatus: status,
-      },
-    });
+      })
+    );
     navigate("/"); 
   };
 
@@ -93,19 +93,19 @@ const EditTodo = () => {
             <option value="Not Started">Not Started</option>
             <option value="In Progress">In Progress</option>
             <option value="Pending">Pending</option>
-            <option value="Done">Done</option>
+            <option value="Completed">Completed</option>
           </select>
         </div>
 
         <button type="submit" className="btn btn-primary px-4">
-          <i class="fa-solid fa-file"></i> Save Changes
+          <i className="fa-solid fa-file"></i> Save Changes
         </button>
         <button
           type="button"
           className="btn btn-secondary ms-2"
           onClick={() => navigate("/")}
         >
-          <i class="fa-solid fa-xmark"></i> Cancel
+          <i className="fa-solid fa-xmark"></i> Cancel
         </button>
       </form>
     </div>
@@ -113,3 +113,5 @@ const EditTodo = () => {
 };
 
 export default EditTodo;
+
+

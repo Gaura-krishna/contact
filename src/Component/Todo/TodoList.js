@@ -1,71 +1,45 @@
-// TodoList.jsx
-
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  deleteTask,
-  completeTask,
-  incompleteTask,
+  deleteTodo,
+  toggleComplete,
+  fetchTodos,
   updateTask,
-  refreshStatus,
+  updateCurrentStatus
 } from "../../Action/todoAction";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import { toast } from "react-toastify";
-import axios from "axios";
 
 const TodoList = () => {
   const dispatch = useDispatch();
-  const reduxTasks = useSelector((state) => state.todo);
-  const [tasks, setTasks] = useState([]);
+  const tasks = useSelector((state) => state.todo);
+
   const [statusFilter, setStatusFilter] = useState("All");
   const [dateFilter, setDateFilter] = useState("");
 
   const handleDelete = (id) => {
-    dispatch(deleteTask(id));
+    dispatch(deleteTodo(id));
     toast.error(" Task deleted!");
   };
 
-  const handleToggleComplete = (id, isCompleted) => {
-    if (isCompleted) {
-      dispatch(incompleteTask(id));
-      toast.error("Task Updated to Incomplete");
-    } else {
-      dispatch(completeTask(id));
-      toast.success("Task Updated to Complete");
-    }
+  const handleToggleComplete = (task) => {
+    dispatch(toggleComplete(task._id, !task.isCompleted));
+    // if (task.isCompleted) {
+    //   toast.error("Task marked Incomplete");
+    // } else {
+    //   toast.success("Task marked Complete");
+    // }
   };
 
-  const handleStatusChange = (id, status) => {
-    dispatch(updateTask(id, status));
-    if (status == "Pending") {
-      toast.warning(`Status updated to "${status}"`);
-    } else {
-      toast(`Status updated to "${status}"`);
-    }
-  };
+const handleStatusChange = (id, status) => {
+  dispatch(updateCurrentStatus(id, status)); 
+};
 
-   useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const response = await axios.get("https://jsonplaceholder.typicode.com/todos?_limit=5");
-
-        // if (response.data && response.data.length > 0) {
-        //   setTasks(response.data);
-        //   toast.success("Tasks loaded from API");
-        // } else {
-        //   throw new Error("No data from API");
-        // }
-        setTasks(reduxTasks);
-      } catch (error) {
-        console.error("Error fetching tasks:", error);
-        toast.error("Failed to load tasks from API. Using local data.");
-      }
-    };
-
-    fetchTasks();
-    dispatch(refreshStatus());
+  useEffect(() => {
+    
+    dispatch(fetchTodos());
   }, [dispatch]);
 
   const filteredTasks = tasks.filter((task) => {
@@ -82,6 +56,7 @@ const TodoList = () => {
 
   return (
     <div className="container-fluid p-0 m-0">
+      {/* HEADER */}
       <div className="d-flex justify-content-between align-items-center bg-dark text-white px-4 py-3 shadow-sm">
         <h2 className="m-0 fw-bold">📝 To-Do List</h2>
         <Link to="/add">
@@ -91,12 +66,10 @@ const TodoList = () => {
         </Link>
       </div>
 
+      {/* FILTERS */}
       <div className="d-flex flex-wrap align-items-center gap-3 px-4 py-3 bg-light shadow-sm">
-        {/* Status Filter */}
         <div>
-          <label className="form-label fw-semibold me-2">
-            Filter by Status:
-          </label>
+          <label className="form-label fw-semibold me-2">Filter by Status:</label>
           <select
             className="form-select form-select-sm d-inline-block w-auto"
             value={statusFilter}
@@ -110,7 +83,6 @@ const TodoList = () => {
           </select>
         </div>
 
-        {/* Date Filter */}
         <div>
           <label className="form-label fw-semibold me-2">Filter by Date:</label>
           <input
@@ -126,26 +98,24 @@ const TodoList = () => {
           onClick={() => {
             setStatusFilter("All");
             setDateFilter("");
+            toast.info("Filters reset");
           }}
         >
-          <i class="fa-solid fa-arrows-spin"></i> Reset Filters
+          <i className="fa-solid fa-arrows-spin"></i> Reset Filters
         </button>
       </div>
 
-      {/* Card Layout */}
+      {/* TASK CARDS */}
       <div className="row g-0 px-0 py-4">
         {filteredTasks?.map((task) => (
-          <div className="col-md-4" key={task.id}>
-            <div className="card shadow-sm border-0 h-100 mx-3">
+          <div className="col-md-4" key={task._id}>
+            <div className="card shadow-sm border-0 h-100 mx-3 my-2">
               <div className="card-body d-flex justify-content-between">
-                {/* Left Content */}
                 <div className="text-start">
                   <h5 className="fw-bold">{task.title}</h5>
                   <p className="text-start mb-1">{task.description}</p>
                   <p className="mb-1 text-start">
-                    <small className="text-secondary">
-                      Due: {task.dueDate}
-                    </small>
+                    <small className="text-secondary">Due: {task.dueDate}</small>
                   </p>
 
                   <span
@@ -163,6 +133,7 @@ const TodoList = () => {
                   </span>
                 </div>
 
+                {/* DROPDOWN MENU */}
                 <div className="dropdown">
                   <button
                     className="btn btn-light border-0"
@@ -170,33 +141,35 @@ const TodoList = () => {
                     data-bs-toggle="dropdown"
                     aria-expanded="false"
                   >
-                    <i class="fa-solid fa-ellipsis-vertical"></i>
+                    <i className="fa-solid fa-ellipsis-vertical"></i>
                   </button>
                   <ul className="dropdown-menu dropdown-menu-end">
                     <li>
-                      <Link className="dropdown-item" to={`/edit/${task.id}`}>
-                        <i class="fa-solid fa-pen-to-square"></i> Edit
+                      <Link className="dropdown-item" to={`/edit/${task._id}`}>
+                        <i className="fa-solid fa-pen-to-square"></i> Edit
                       </Link>
                     </li>
                     <li>
                       <button
                         className="dropdown-item text-danger"
-                        onClick={() => handleDelete(task.id)}
+                        onClick={() => handleDelete(task._id)}
                       >
-                        <i class="fa-solid fa-trash"></i> Delete
+                        <i className="fa-solid fa-trash"></i> Delete
                       </button>
                     </li>
                     <li>
                       <button
-                        className="dropdown-item "
-                        onClick={() =>
-                          handleToggleComplete(task.id, task.isCompleted)
-                        }
+                        className="dropdown-item"
+                        onClick={() => handleToggleComplete(task)}
                       >
                         {task.isCompleted ? (
-                          <span className="text-warning"> <i class="fa-solid fa-exclamation"></i> Incomplete</span>
+                          <span className="text-warning">
+                            <i className="fa-solid fa-exclamation"></i> Incomplete
+                          </span>
                         ) : (
-                          <span className="text-success"><i class="fa-solid fa-check"></i> Complete</span>
+                          <span className="text-success">
+                            <i className="fa-solid fa-check"></i> Complete
+                          </span>
                         )}
                       </button>
                     </li>
@@ -204,24 +177,21 @@ const TodoList = () => {
                 </div>
               </div>
 
-              {/* Status Change Dropdown */}
               <div className="card-footer d-flex justify-content-between align-items-center">
                 <small className="text-muted">Change Status:</small>
                 <select
                   className="form-select form-select-sm w-auto"
                   value={task.currentStatus}
-                  onChange={(e) => handleStatusChange(task.id, e.target.value)}
+                  onChange={(e) => handleStatusChange(task._id, e.target.value)}
                 >
                   <option value="Not Started">Not Started</option>
                   <option value="In Progress">In Progress</option>
                   <option value="Pending">Pending</option>
                   {task.isCompleted ? (
                     <option value="Done" disabled>
-                      {" "}
                       Done
                     </option>
                   ) : null}
-                  {/* <option value="Done">Done</option> */}
                 </select>
               </div>
             </div>

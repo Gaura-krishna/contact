@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { addTodo } from "../../Action/todoAction"; // Import API action
+import { toast } from "react-toastify";
 
 const AddTodo = () => {
   const dispatch = useDispatch();
@@ -9,24 +11,36 @@ const AddTodo = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
-  const [status, setStatus] = useState("Not Started");
+  const [status, setStatus] = useState("NotStarted");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!title || !dueDate) {
+      toast.error("Title and Due Date are required!");
+      return;
+    }
+
     const newTask = {
-      id: Date.now(), 
       title,
       description,
       dueDate,
       currentStatus: status,
       isCompleted: false,
-      isUpdatedAt:null,
-      isCreatedAt:new Date().toISOString().split("T")[0]
     };
 
-    dispatch({ type: "ADD_TASK", payload: newTask });
-    navigate("/"); 
+    try {
+      setLoading(true);
+      await dispatch(addTodo(newTask)); // Call API and dispatch
+      toast.success("Task added successfully");
+      navigate("/"); // Go back to todo list
+    } catch (err) {
+      toast.error("Failed to add task ");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -38,10 +52,8 @@ const AddTodo = () => {
         className="shadow p-4 rounded bg-light"
         style={{ maxWidth: "600px" }}
       >
-        <div className="mb-3">
-          <div className="text-start">
-            <label className="form-label ">Title</label>
-          </div>
+        <div className="mb-3 text-start">
+          <label className="form-label">Title</label>
           <input
             type="text"
             className="form-control"
@@ -52,30 +64,29 @@ const AddTodo = () => {
           />
         </div>
 
-        <div className="mb-3">
-          <div className="text-start">
-            <label className="form-label">Description</label>
-          </div>
+        <div className="mb-3 text-start">
+          <label className="form-label">Description</label>
           <textarea
             className="form-control"
             rows={3}
             placeholder="Enter task description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-          ></textarea>
+          />
         </div>
 
-        <div className="mb-3">
+        <div className="mb-3 text-start">
           <label className="form-label">Due Date</label>
           <input
             type="date"
             className="form-control"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
+            required
           />
         </div>
 
-        <div className="mb-3">
+        <div className="mb-3 text-start">
           <label className="form-label">Status</label>
           <select
             className="form-select"
@@ -83,20 +94,19 @@ const AddTodo = () => {
             onChange={(e) => setStatus(e.target.value)}
             disabled
           >
-            <option value="Not Started">Not Started</option>
-
+            <option value="NotStarted">Not Started</option>
           </select>
         </div>
 
-        <button type="submit" className="btn btn-primary px-4">
-          <i class="fa-solid fa-clipboard-check"></i> Add Task
+        <button type="submit" className="btn btn-primary px-4" disabled={loading}>
+          {loading ? "Adding..." : "Add Task"}
         </button>
         <button
           type="button"
           className="btn btn-secondary ms-2"
           onClick={() => navigate("/")}
         >
-          <i class="fa-solid fa-xmark"></i> Cancel
+          Cancel
         </button>
       </form>
     </div>

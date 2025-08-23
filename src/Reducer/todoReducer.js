@@ -1,33 +1,19 @@
-// reducer.js
-
-const initialTasks = [
-  {
-    id: 0,
-    title: "Learn Redux",
-    description: "Understand actions, reducers, and store",
-    dueDate: "2025-08-21",
-    isCompleted: false,
-    currentStatus: "Not Started",
-  },
-  {
-    id: 1,
-    title: "Build Todo App",
-    description: "Convert contact manager to todo list",
-    dueDate: "2025-08-25",
-    isCompleted: false,
-    currentStatus: "Pending",
-  },
-];
-
+// helper to derive status
 const getStatus = (task) => {
   const today = new Date().toISOString().split("T")[0];
-  if (task.isCompleted) return "Done";
-  if (new Date(today) > new Date(task.dueDate)) return "Pending";
+  if (task.isCompleted) return "Completed";
+  if (new Date(today) > new Date(task.dueDate) && !task.isCompleted) return "Pending";
   return task.currentStatus || "Not Started";
 };
 
-const todoReducer = (state = initialTasks, action) => {
+const todoReducer = (state = [], action) => {
   switch (action.type) {
+    case "SET_TASKS":
+      return action.payload.map((task) => ({
+        ...task,
+        currentStatus: getStatus(task),
+      }));
+
     case "ADD_TASK":
       return [
         ...state,
@@ -36,35 +22,31 @@ const todoReducer = (state = initialTasks, action) => {
 
     case "EDIT_TASK":
       return state.map((task) =>
-        task.id === action.payload.id
+        task._id === action.payload._id
           ? { ...action.payload, currentStatus: getStatus(action.payload) }
           : task
       );
 
     case "DELETE_TASK":
-      return state.filter((task) => task.id !== action.payload);
+      return state.filter((task) => task._id !== action.payload);
 
     case "COMPLETE_TASK":
       return state.map((task) =>
-        task.id === action.payload
-          ? { ...task, isCompleted: true, currentStatus: "Done" }
+        task._id === action.payload
+          ? { ...task, isCompleted: true, currentStatus: "Completed" }
           : task
       );
 
-   case "INCOMPLETE_TASK":
-  return state.map((task) =>
-    task.id === action.payload
-      ? {
-          ...task,
-          isCompleted: false,
-          currentStatus: "In Progress",
-        }
-      : task
-  );
+    case "INCOMPLETE_TASK":
+      return state.map((task) =>
+        task._id === action.payload
+          ? { ...task, isCompleted: false, currentStatus: "In Progress" }
+          : task
+      );
 
     case "UPDATE_STATUS":
       return state.map((task) =>
-        task.id === action.payload.id
+        task._id === action.payload.id
           ? { ...task, currentStatus: action.payload.currentStatus }
           : task
       );
