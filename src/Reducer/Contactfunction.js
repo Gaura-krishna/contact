@@ -20,16 +20,7 @@ const card = [
   },
 ];
 
-// Utility function to calculate status
-const getStatus = (task) => {
-  const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
 
-  if (task.isCompleted) return "Done";
-
-  if (new Date(today) >= new Date(task.taskDate)) return "Pending";
-
-  return task.currentStatus || "Not Started"; // fallback
-};
 
 // Reducer
 const Phase2 = (state = card, action) => {
